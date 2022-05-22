@@ -2,29 +2,44 @@ import { useState } from 'react'
 import { Storage } from 'aws-amplify';
 
 function App() {
-  const [file, setFile] = useState();
-  const [uploaded, setUploaded] = useState(false);
+  const [files, setFiles] = useState();
+  const [preview, setPreviewImage] = useState(false);
+  const [imageStatus, setImageStatus] = useState('Select at least one image to get started.');
 
   return (
     <div className="App">
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={async () => {
-        const storageResult = await Storage.put('puppy.png', file, {
-          level: 'public',
-          type: 'image/png'
-        })
-        // Insert predictions code here later
-        setUploaded(true)
-        console.log(storageResult);
-      }}>Upload and check if there's a dog!</button>
+      <div>{imageStatus}</div>
 
-      <div>
-        {uploaded
-          ? <div>Your image is uploaded!</div>
-          : <div>Upload a photo to get started</div>}
-      </div>
+      <input type="file" data-testid="image-input" onChange={(e) => {
+        setFiles(e.target.files);
+        setPreviewImage(true);
+      }} multiple/>
+
+      <button onClick={async () => {
+        if (files) {
+          for (let i = 0; i < files.length; i++){
+            const storageResult = await Storage.put(files[i].name, files[i], {
+              level: 'public',
+              type: 'image/png'
+            });
+            console.log(storageResult);
+          }
+          
+          setImageStatus('Your images have been uploaded!');
+        } else {
+          setImageStatus('You must select one or more images before attempting to upload.');
+        }
+      }}>Upload Images</button>
+      
+      {preview && (
+        <div>
+          <label>First image preview</label>
+          <img src={URL.createObjectURL(files[0])} alt="Preview" />
+        </div>
+      )}
+      
     </div>
-    );
+  );
 }
 
 export default App;
