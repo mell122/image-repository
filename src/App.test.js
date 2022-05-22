@@ -23,3 +23,8 @@ test('Check the status text before image upload', () => {
   expect(linkElement).toBeInTheDocument();
 });
 
+test('Make sure no preview before image upload', () => {
+  render(<App />);
+  const linkElement = screen.queryByLabelText(/First image preview/i);
+  expect(linkElement).not.toBeInTheDocument();
+});
